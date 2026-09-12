@@ -1,0 +1,22 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: campus-reservation-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: campus_reservation
+      TZ: Asia/Shanghai
+    ports:
+      - "3306:3306"
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_0900_ai_ci
+    volumes:
+      - ./sql/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./sql/init-data.sql:/docker-entrypoint-initdb.d/02-init-data.sql
+
+  redis:
+    image: redis:7.2
+    container_name: campus-reservation-redis
+    restart: always
+    ports:
+      - "6379:6379"

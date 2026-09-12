@@ -1,0 +1,84 @@
+### 1. 管理员登录
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "123456"
+}
+
+> {% client.global.set("adminToken", response.body.data.token); %}
+
+### 2. 学生登录
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "student",
+  "password": "123456"
+}
+
+> {% client.global.set("studentToken", response.body.data.token); %}
+
+### 3. 管理员新增资源类型
+POST http://localhost:8080/api/resource-types
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "name": "创新空间",
+  "description": "创新创业、项目路演、团队讨论空间",
+  "sort": 5,
+  "status": 1
+}
+
+### 4. 查询资源列表
+GET http://localhost:8080/api/resources?current=1&size=10&status=OPEN
+Authorization: Bearer {{studentToken}}
+
+### 5. 查询资源详情，走 Redis 缓存
+GET http://localhost:8080/api/resources/1
+Authorization: Bearer {{studentToken}}
+
+### 6. 查询某资源某天的可预约时段，走 Redis 缓存
+GET http://localhost:8080/api/slots?resourceId=1&reserveDate=2026-06-01
+Authorization: Bearer {{studentToken}}
+
+### 7. 管理员创建预约时段
+POST http://localhost:8080/api/slots
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "resourceId": 2,
+  "reserveDate": "2026-06-01",
+  "startTime": "19:00:00",
+  "endTime": "21:00:00",
+  "totalCapacity": 1
+}
+
+### 8. 学生提交预约：把 slotId 换成真实时段 ID
+POST http://localhost:8080/api/reservations/book
+Authorization: Bearer {{studentToken}}
+Content-Type: application/json
+
+{
+  "slotId": 1
+}
+
+### 9. 我的预约记录
+GET http://localhost:8080/api/reservations/mine?current=1&size=10
+Authorization: Bearer {{studentToken}}
+
+### 10. 取消预约：把 id 换成真实预约记录 ID
+PUT http://localhost:8080/api/reservations/1/cancel
+Authorization: Bearer {{studentToken}}
+Content-Type: application/json
+
+{
+  "reason": "临时有事，取消预约"
+}
+
+### 11. 管理员查看全部预约记录
+GET http://localhost:8080/api/reservations/admin?current=1&size=10
+Authorization: Bearer {{adminToken}}
